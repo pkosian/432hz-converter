@@ -1,13 +1,14 @@
-import os, shutil, asyncio, threading, pydub, mutagen
+import os, shutil, asyncio, threading, pydub, mutagen, time
 
-inputPath = "..." # TODO
-outputPath = "..." # TODO
+inputPath = "..." Ex: 'C:/User/.../Music/'
+outputPath = "..." Ex: 'C:/User/.../Music/432/'
 minRating = 5
 vel = 432 / 440
 overwrite = False
 append = " (432hz)"
 justcopy = "432hz"
 filetype = ".mp3"
+maxthreads = 16
 
 try:
     os.mkdir(outputPath)
@@ -55,6 +56,8 @@ for f in d:
     t = threading.Thread(target=slowDownFile, args=(f,))
     threads.append(t)
 for t in threads:
+    while len([t for t in threads if t.is_alive()]) == maxthreads:
+        time.sleep(0.1)
     t.start()
 for t in threads:
     t.join()
