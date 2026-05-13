@@ -1,7 +1,7 @@
-import os, shutil, asyncio, threading, pydub, mutagen, time
+import os, shutil, threading, pydub, mutagen, time
 
-inputPath = "..." # Ex: 'C:/Users/.../Music/'
-outputPath = "..." # Ex: 'C:/Users/.../Music/432/'
+inputPath = ""
+outputPath = ""
 minRating = 5
 vel = 432 / 440
 overwrite = False
@@ -24,18 +24,18 @@ def speed_change(sound, speed=1.0):
     return sound_with_altered_frame_rate.set_frame_rate(sound.frame_rate)
 
 def slowDownFile(f):
-    if justcopy in f.name:
-        shutil.copy(f.path, outputPath)
-        print("Copied: ", f.name)
-    elif overwrite or not f.name[:-4] + append + filetype in existingFileNames:
-        fpath = f.path
-        tagfile = mutagen.File(fpath)
-        rating = 0
-        try:
-            rating = int(tagfile['TXXX:POPM'].text[0])
-        except:
-            pass
-        if rating >= minRating:
+    rating = 0
+    fpath = f.path
+    tagfile = mutagen.File(fpath)
+    try:
+        rating = int(tagfile['TXXX:POPM'].text[0])
+    except:
+        pass
+    if rating >= minRating:
+        if justcopy in f.name:
+            shutil.copy(f.path, outputPath)
+            print("Copied: ", f.name)
+        elif overwrite or not f.name[:-4] + append + filetype in existingFileNames:
             print("Converting: ", f.name)
             af = pydub.AudioSegment.from_file(fpath)
             afNew = speed_change(af, vel)
@@ -46,9 +46,9 @@ def slowDownFile(f):
             newTagFile.save(newpath)
             print("Finished: ", f.name)
         else:
-            print("Rating not high enough: ", f.name)
+            print("File already exists: " + f.name)
     else:
-        print("File already exists: " + f.name)
+        print("Rating not high enough: ", f.name)
 
 threads = []
 d = os.scandir(inputPath)
