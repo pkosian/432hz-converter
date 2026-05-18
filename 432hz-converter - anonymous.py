@@ -10,13 +10,6 @@ justcopy = "432hz"
 filetype = ".mp3"
 maxthreads = 16
 
-try:
-    os.mkdir(outputPath)
-except:
-    pass
-
-existingFileNames = [n.name for n in os.scandir(outputPath)]
-
 def speed_change(sound, speed=1.0):
     sound_with_altered_frame_rate = sound._spawn(sound.raw_data, overrides={
         "frame_rate": int(sound.frame_rate * speed)
@@ -53,12 +46,17 @@ def slowDownFile(f):
 
 threads = []
 d = os.scandir(inputPath)
+try:
+    os.mkdir(outputPath)
+except:
+    pass
+existingFileNames = [n.name for n in os.scandir(outputPath)]
 for f in d:
     t = threading.Thread(target=slowDownFile, args=(f,))
     threads.append(t)
 for t in threads:
     while len([t for t in threads if t.is_alive()]) == maxthreads:
-        time.sleep(0.1)
+        time.sleep(0.05)
     t.start()
 for t in threads:
     t.join()
