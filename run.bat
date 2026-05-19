@@ -1,2 +1,2 @@
-python "432hz-converter - anonymous.py"
+python "432hz-converter-anonymous.py"
 PAUSE
