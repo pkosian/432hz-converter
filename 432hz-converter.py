@@ -62,8 +62,9 @@ if __name__ == "__main__":
             elif not (f.name[:-4] + settings.append + settings.filetype) in [o.name for o in output_array]:
                 to_convert.append(f)
             else:
-                already_exists.append(f)
-                print("File already exists: " + f.name)
+                if settings.remove_remnants:
+                    already_exists.append(f)
+                    print("File already exists: " + f.name)
         else:
             print("Rating not high enough: " + f.name)
     # Delete remnant files
