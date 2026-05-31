@@ -7,17 +7,15 @@ def speed_change (sound, speed=1.0):
     return sound_with_altered_frame_rate.set_frame_rate(sound.frame_rate)
 
 def slowDownFile (f):
-    f_name = f.name
-    f_path = f.path
-    print("Converting: ", f_name)
-    af = pydub.AudioSegment.from_file(f_path)
+    print("Converting: ", f[1])
+    af = pydub.AudioSegment.from_file(f[0])
     af_new = speed_change(af, settings.vel)
-    new_path = settings.output_path + f_name[:-4] + settings.append + settings.filetype
+    new_path = settings.output_path + f[1][:-4] + settings.append + settings.filetype
     af_new.export(new_path, format = 'mp3', parameters=["-q:a", "0"])
     new_tag_file = mutagen.File(new_path)
-    new_tag_file = mutagen.File(f_path)
+    new_tag_file = mutagen.File(f[0])
     new_tag_file.save(new_path)
-    print("Finished converting: ", f_name)
+    print("Finished converting: ", f[1])
 
 def copyFile (f):
     shutil.copy(f.path, settings.output_path)
@@ -32,15 +30,15 @@ def checkConditions (f, q):
         pass
     if rating >= settings.min_rating:
         if settings.just_copy in f.name:
-            q.put(["to_copy", f])
+            q.put(["to_copy", [f.path, f.name]])
         elif settings.overwrite:
-            q.put(["to_convert", f])
+            q.put(["to_convert", [f.path, f.name]])
         elif not (f.name[:-4] + settings.append + settings.filetype) in [o.name for o in output_array]:
-            q.put(["to_convert", f])
+            q.put(["to_convert", [f.path, f.name]])
         else:
             if settings.remove_remnants:
                 print("File already exists: " + f.name)
-                q.put(["already_exists", f])
+                q.put(["already_exists", [f.path, f.name]])
     else:
         print("Rating not high enough: " + f.name)
 
@@ -90,7 +88,7 @@ if __name__ == "__main__":
     # Delete remnant files
     for f in output_array:
         new_files = to_convert + to_copy + already_exists
-        if not (f.name [:-12] + settings.filetype) in [nf.name for nf in new_files]:
+        if not (f.name [:-12] + settings.filetype) in [nf[1] for nf in new_files]:
             os.remove(f.path)
             print("Deleted remnant file: " + f.name)
     # Process files
