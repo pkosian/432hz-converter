@@ -68,7 +68,6 @@ if __name__ == "__main__":
     # Gather files for conversion
     gather_threads = []
     q = queue.Queue()
-    q.put(["initialize queue"]) # Pseudo element to prevent skipping, see line 82
     for f in input_array:
         t = threading.Thread(target=checkConditions, args=(f,q))
         gather_threads.append(t)
@@ -79,7 +78,9 @@ if __name__ == "__main__":
     to_convert = []
     to_copy = []
     already_exists = []
-    while not q.empty(): # Would only work if a thread is fast enough to fill the queue, hence prefilling it with a pseudo element
+    for gt in gather_threads:
+        gt.join()
+    while not q.empty():
         result = q.get()
         if result[0] == "to_convert":
             to_convert.append(result[1])
@@ -87,8 +88,6 @@ if __name__ == "__main__":
             to_copy.append(result[1])
         elif result[0] == "already_exists":
             already_exists.append(result[1])
-    for gt in gather_threads:
-        gt.join()
     # Delete remnant files
     for f in output_array:
         new_files = to_convert + to_copy + already_exists
